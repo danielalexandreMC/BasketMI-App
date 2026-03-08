@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="author" content="Paula Meizoso Alonso https://meizoso.eu">
+    <meta name="date" content="2026-02-12">
+
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BSR Control">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/8168/8168357.png">
+
+    <title>BSR Control Pro - Elite Edition</title>
+    <style>
+        :root { 
+            --primary: #000000;
+            --secondary: #1b5e20;
+            --accent: #2e7d32;
+            --danger: #d32f2f;
+            --text-light: #ffffff;
+            --bg: #f5f5f5;
+            --card-bg: #ffffff;
+            --text-main: #333333;
+            --row-active: #e8f5e9;
+        }
+
+        [data-theme="dark"] {
+            --bg: #121212;
+            --card-bg: #1e1e1e;
+            --text-main: #e0e0e0;
+            --row-active: #1b3320;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Roboto, sans-serif; 
+            background: var(--bg); color: var(--text-main);
+            margin: 0; padding: 0; display: flex; flex-direction: column; 
+            align-items: center; padding-bottom: 240px; transition: background 0.3s;
+        }
+        
+        .header-fixed { 
+            width: 100%; max-width: 600px; background: var(--primary); 
+            padding: 10px; position: sticky; top: 0; z-index: 10; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .top-bar { display: flex; gap: 5px; margin-bottom: 8px; }
+        .btn-tool { 
+            flex: 1; background: #333; color: white; border: none; 
+            padding: 8px; font-size: 0.6em; border-radius: 4px; cursor: pointer;
+            text-transform: uppercase; font-weight: bold;
+        }
+
+        .selector-equipo { display: flex; gap: 8px; }
+        .btn-tab { 
+            flex: 1; padding: 8px 5px; border: 2px solid transparent; 
+            border-radius: 4px; font-weight: bold; cursor: pointer; 
+            color: white; background: #222; transition: all 0.3s;
+        }
+        .btn-tab.active { background: var(--accent); border-color: white; }
+
+        .card { background: var(--card-bg); width: 100%; max-width: 600px; display: none; }
+        .card.active { display: block; }
+
+        .equipo-nombre { 
+            text-align: center; padding: 5px; font-weight: 900; 
+            text-transform: uppercase; border-bottom: 4px solid var(--accent); 
+            font-size: 1.2em; background: var(--card-bg); color: var(--text-main);
+        }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { background: var(--primary); color: white; padding: 10px 2px; font-size: 0.75em; }
+        td { text-align: center; padding: 6px 2px; border-bottom: 1px solid #44444433; }
+        
+        .editable { 
+            background: var(--card-bg); color: var(--text-main);
+            border: 1px solid #666; border-radius: 4px;
+            font-weight: bold; width: 45px; padding: 8px 2px; text-align: center; 
+            font-size: 1em;
+        }
+
+        .puntos-netos { font-weight: bold; color: var(--accent); font-size: 1em; }
+
+        .check-pista { transform: scale(1.7); accent-color: var(--accent); cursor: pointer; }
+        .check-bonus { transform: scale(1.7); accent-color: var(--secondary); }
+
+        .footer-fixed {
+            position: fixed; bottom: 0; width: 100%; max-width: 600px;
+            background: var(--primary); border-top: 4px solid var(--accent);
+            padding: 15px; z-index: 100; box-sizing: border-box;
+        }
+
+        .panel-alertas { 
+            padding: 5px; border-radius: 4px; text-align: center; 
+            font-weight: bold; margin-bottom: 5px; font-size: 0.7em;
+        }
+        .ok { background: var(--accent); color: white; }
+        .error { background: var(--danger); color: white; }
+
+        .resumen { 
+            display: flex; justify-content: space-around; align-items: center;
+            background: rgba(255,255,255,0.1); padding: 8px; border-radius: 4px; 
+            margin-bottom: 8px; color: white;
+        }
+        .icon-bsr { font-size: 1.2em; margin-right: 8px; }
+        .puntos-val { font-size: 1.2em; color: #4ade80; font-weight: 900; }
+
+        .row-active { background-color: var(--row-active) !important; }
+
+        .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-action { 
+            padding: 8px; border-radius: 4px; font-weight: bold; 
+            cursor: pointer; font-size: 0.8em; border: 1px solid #555;
+            background: transparent; color: #ccc;
+        }
+        .btn-save-q { border-color: #4ade80; color: #4ade80; }
+    </style>
+</head>
+<body>
+
+    <div class="header-fixed">
+        <div class="top-bar">
+            <button class="btn-tool" onclick="toggleFullScreen()">Fullscreem 🖥️</button>
+            <button class="btn-tool" onclick="toggleTheme()">Mode 🌓</button>
+            <button class="btn-tool" onclick="cargarQuinteto()">Load 5 ⭐</button>
+        </div>
+        <div class="selector-equipo">
+            <button id="tab-local" class="btn-tab active" onclick="switchEquipo('local')">BASKETMI</button>
+            <button id="tab-visitante" class="btn-tab" onclick="switchEquipo('visitante')">CONTRARIO</button>
+        </div>
+    </div>
+
+    <div id="card-local" class="card active">
+        <div class="equipo-nombre" contenteditable="true" id="name-local" oninput="saveAndCalc('local')">BASKETMI</div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:20%">DORSAL</th>
+                    <th style="width:20%">CLASE</th>
+                    <th style="width:15%">PISTA</th>
+                    <th style="width:15%">MUJER</th>
+                    <th style="width:15%">U23</th>
+                    <th style="width:15%">PUNTOS</th>
+                </tr>
+            </thead>
+            <tbody id="body-local"></tbody>
+        </table>
+    </div>
+
+    <div id="card-visitante" class="card">
+        <div class="equipo-nombre" contenteditable="true" id="name-visitante" oninput="saveAndCalc('visitante')">CONTRARIO</div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:20%">DORSAL</th>
+                    <th style="width:20%">CLASE</th>
+                    <th style="width:15%">PISTA</th>
+                    <th style="width:15%">MUJER</th>
+                    <th style="width:15%">U23</th>
+                    <th style="width:15%">PUNTOS</th>
+                </tr>
+            </thead>
+            <tbody id="body-visitante"></tbody>
+        </table>
+    </div>
+
+    <div class="footer-fixed">
+        <div id="alerta-panel" class="panel-alertas ok">ALINEACIÓN OK ✅</div>
+        <div class="resumen">
+            <div><span class="icon-bsr">🧑‍🦽</span> <span id="val-jugadores" style="font-weight: bold; font-size: 1em;">0</span>/5</div>
+            <div>PUNTOS: <span id="val-puntos" class="puntos-val">0.0</span> <small>/ 14.5</small></div>
+        </div>
+        <div class="actions-grid">
+            <button class="btn-action btn-save-q" onclick="guardarQuinteto()">GUARDAR QUINTETO</button>
+            <button class="btn-action" onclick="ejecutarReset()" style="border-color: var(--danger); color: var(--danger);">BORRAR TABLA</button>
+        </div>
+    </div>
+
+<script>
+    let equipoActivo = 'local';
+    let theme = localStorage.getItem('bsr_theme') || 'light';
+
+    function toggleTheme() {
+        theme = theme === 'light' ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        localStorage.setItem('bsr_theme', theme);
+    }
+
+    function toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(e => console.log("Error FS"));
+        } else {
+            document.exitFullscreen();
+        }
+    }
+
+    function validarRango(el) {
+        // 1. Reemplazamos comas por puntos y eliminamos caracteres no válidos
+        el.value = el.value.replace(/,/g, '.').replace(/[^0-9.]/g, '');
+    
+        // 2. Evitamos que haya más de un punto decimal
+        const puntos = el.value.split('.');
+        if (puntos.length > 2) el.value = puntos[0] + '.' + puntos.slice(1).join('');
+
+        // 3. Validamos el rango máximo de 4.5
+        if (parseFloat(el.value) > 4.5) {
+        el.value = "4.5";
+        }
+    }
+
+    function init() {
+        document.documentElement.setAttribute('data-theme', theme);
+        ['local', 'visitante'].forEach(equipo => {
+            const tbody = document.getElementById(`body-${equipo}`);
+            for (let i = 0; i < 12; i++) {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="text" 
+                            class="editable" 
+                            inputmode="numeric" 
+                            placeholder="00" 
+                            maxlength="2" 
+                            onkeypress="return /[0-9]/.test(event.key)"
+                            oninput="this.value = this.value.replace(/[^0-9]/g, ''); saveAndCalc('${equipo}')"></td>
+                    <td><input type="text" 
+                            class="editable" 
+                            inputmode="decimal" 
+                            placeholder="0.0" 
+                            onkeypress="return /[0-9\.]/.test(event.key)"
+                            oninput="validarRango(this); saveAndCalc('${equipo}')"></td>
+                    <td><input type="checkbox" class="check-pista" onchange="saveAndCalc('${equipo}')"></td>
+                    <td><input type="checkbox" class="check-bonus" onchange="saveAndCalc('${equipo}')"></td>
+                    <td><input type="checkbox" class="check-bonus" onchange="saveAndCalc('${equipo}')"></td>
+                    <td><span class="puntos-netos">0.0</span></td>
+                `;
+                tbody.appendChild(tr);
+            }
+        });
+        loadData();
+    }
+
+    function saveAndCalc(equipo) {
+        const filas = document.querySelectorAll(`#body-${equipo} tr`);
+        let enPista = 0;
+        let puntosTotales = 0;
+
+        const data = Array.from(filas).map(f => {
+            const inputs = f.querySelectorAll('input');
+            const netoLabel = f.querySelector('.puntos-netos');
+            const claseBase = parseFloat(inputs[1].value) || 0;
+            const estaEnPista = inputs[2].checked;
+            const esMujer = inputs[3].checked;
+            const esU23 = inputs[4].checked;
+
+            let puntosJugador = 0;
+            if (claseBase > 0) {
+                let descuento = esMujer ? 1.5 : (esU23 ? 1.0 : 0);
+                puntosJugador = Math.max(1.0, claseBase - descuento);
+            }
+            netoLabel.innerText = puntosJugador.toFixed(1);
+
+            if (estaEnPista) {
+                enPista++;
+                f.classList.add('row-active');
+                puntosTotales += puntosJugador;
+            } else {
+                f.classList.remove('row-active');
+            }
+
+            return { dorsal: inputs[0].value, clase: inputs[1].value, pista: estaEnPista, mujer: esMujer, u23: esU23 };
+        });
+
+        localStorage.setItem(`bsr_data_${equipo}`, JSON.stringify(data));
+        localStorage.setItem(`bsr_name_${equipo}`, document.getElementById(`name-${equipo}`).innerText);
+        actualizarUI(equipo, puntosTotales, enPista);
+    }
+
+    function actualizarUI(equipo, puntos, jugadores) {
+        if (equipo !== equipoActivo) return;
+        document.getElementById('val-jugadores').innerText = jugadores;
+        document.getElementById('val-puntos').innerText = puntos.toFixed(1);
+        const alerta = document.getElementById('alerta-panel');
+        
+        if (jugadores > 5) {
+            alerta.innerText = `⚠️ ERROR: ${jugadores} JUGADORES`;
+            alerta.className = "panel-alertas error";
+        } else if (puntos > 14.5) {
+            alerta.innerText = `⚠️ EXCESO PUNTOS: ${puntos.toFixed(1)}`;
+            alerta.className = "panel-alertas error";
+        } else {
+            alerta.innerText = jugadores === 5 ? "ALINEACIÓN OK ✅" : "COMPLETAR QUINTETO";
+            alerta.className = "panel-alertas ok";
+        }
+    }
+
+    function guardarQuinteto() {
+        const equipo = equipoActivo;
+        const filas = document.querySelectorAll(`#body-${equipo} tr`);
+        const snapshot = Array.from(filas).map(f => {
+            const inputs = f.querySelectorAll('input');
+            return {
+                dorsal: inputs[0].value,
+                clase: inputs[1].value,
+                pista: inputs[2].checked,
+                mujer: inputs[3].checked,
+                u23: inputs[4].checked
+            };
+        });
+        localStorage.setItem(`bsr_snapshot_${equipo}`, JSON.stringify(snapshot));
+        alert("⭐ Quinteto (Dorsales y Clases) guardado con éxito.");
+    }
+
+    function cargarQuinteto() {
+        const saved = localStorage.getItem(`bsr_snapshot_${equipoActivo}`);
+        if (!saved) return alert("No hay ningún quinteto guardado.");
+        const data = JSON.parse(saved);
+        const filas = document.querySelectorAll(`#body-${equipoActivo} tr`);
+        data.forEach((d, i) => {
+            if (filas[i]) {
+                const inputs = filas[i].querySelectorAll('input');
+                inputs[0].value = d.dorsal;
+                inputs[1].value = d.clase;
+                inputs[2].checked = d.pista;
+                inputs[3].checked = d.mujer;
+                inputs[4].checked = d.u23;
+            }
+        });
+        saveAndCalc(equipoActivo);
+    }
+
+    function switchEquipo(equipo) {
+        equipoActivo = equipo;
+        document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
+        document.getElementById(`card-${equipo}`).classList.add('active');
+        document.getElementById(`tab-${equipo}`).classList.add('active');
+        saveAndCalc(equipo);
+    }
+
+    function loadData() {
+        ['local', 'visitante'].forEach(equipo => {
+            const savedData = localStorage.getItem(`bsr_data_${equipo}`);
+            const savedName = localStorage.getItem(`bsr_name_${equipo}`);
+            if (savedName) document.getElementById(`name-${equipo}`).innerText = savedName;
+            if (savedData) {
+                const data = JSON.parse(savedData);
+                const filas = document.querySelectorAll(`#body-${equipo} tr`);
+                data.forEach((d, i) => {
+                    if (filas[i]) {
+                        const inputs = filas[i].querySelectorAll('input');
+                        inputs[0].value = d.dorsal;
+                        inputs[1].value = d.clase;
+                        inputs[2].checked = d.pista;
+                        inputs[3].checked = d.mujer;
+                        inputs[4].checked = d.u23;
+                    }
+                });
+            }
+            saveAndCalc(equipo);
+        });
+    }
+
+    function ejecutarReset() {
+        if(confirm(`¿Deseas resetear toda la tabla de ${equipoActivo}?`)) {
+            const inputs = document.querySelectorAll(`#body-${equipoActivo} input`);
+            inputs.forEach(i => i.type === 'checkbox' ? i.checked = false : i.value = "");
+            saveAndCalc(equipoActivo);
+        }
+    }
+
+    init();
+</script>
+</body>
+</html>
