@@ -201,12 +201,13 @@
         const partes = el.value.split('.');
         if (partes.length > 2) {
             el.value = partes[0] + '.' + partes.slice(1).join('');
-    }
-    // Solo validar cando o usuario rematou de escribir a parte decimal
+        }
         const val = parseFloat(el.value);
-        if (!isNaN(val) && el.value.indexOf('.') !== el.value.length - 1) {
+        if (!isNaN(val)) {
             if (val > 4.5) el.value = "4.5";
             if (val < 0) el.value = "0";
+        } else {
+            el.value = '';
         }
     }
 
@@ -228,7 +229,12 @@
                             class="editable" 
                             inputmode="decimal" 
                             placeholder="0.0" 
-                            oninput="validarRango(this); saveAndCalc('${equipo}')"></td>
+                            autocomplete="off" 
+                            autocorrect="off" 
+                            autocapitalize="off" 
+                            spellcheck="false"
+                            oninput="this.value = this.value.replace(/[^0-9.,]/g, ''); saveAndCalc('${equipo}')"
+                            onblur="validarRango(this); saveAndCalc('${equipo}')"></td>
                     <td><input type="checkbox" class="check-pista" onchange="saveAndCalc('${equipo}')"></td>
                     <td><input type="checkbox" class="check-bonus" onchange="saveAndCalc('${equipo}')"></td>
                     <td><input type="checkbox" class="check-bonus" onchange="saveAndCalc('${equipo}')"></td>
