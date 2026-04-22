@@ -81,6 +81,17 @@
             font-size: 1em;
         }
 
+        /* Ocultar as flechas dos inputs numéricos en todos os navegadores */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
         .puntos-netos { font-weight: bold; color: var(--accent); font-size: 1em; }
 
         .check-pista { transform: scale(1.7); accent-color: var(--accent); cursor: pointer; }
@@ -197,17 +208,11 @@
     }
 
     function validarRango(el) {
-        el.value = el.value.replace(/,/g, '.').replace(/[^0-9.]/g, '');
-        const partes = el.value.split('.');
-        if (partes.length > 2) {
-            el.value = partes[0] + '.' + partes.slice(1).join('');
-        }
-        const val = parseFloat(el.value);
-        if (!isNaN(val)) {
-            if (val > 4.5) el.value = "4.5";
-            if (val < 0) el.value = "0";
-        } else {
+        var val = parseFloat(el.value);
+        if (isNaN(val) || val < 0) {
             el.value = '';
+        } else if (val > 4.5) {
+            el.value = '4.5';
         }
     }
 
@@ -225,15 +230,13 @@
                             maxlength="2" 
                             onkeypress="return /[0-9]/.test(event.key)"
                             oninput="this.value = this.value.replace(/[^0-9]/g, ''); saveAndCalc('${equipo}')"></td>
-                    <td><input type="text" 
+                    <td><input type="number" 
                             class="editable" 
-                            inputmode="decimal" 
-                            placeholder="0.0" 
-                            autocomplete="off" 
-                            autocorrect="off" 
-                            autocapitalize="off" 
-                            spellcheck="false"
-                            oninput="this.value = this.value.replace(/[^0-9.,]/g, ''); saveAndCalc('${equipo}')"
+                            step="any" 
+                            min="0" 
+                            max="4.5" 
+                            placeholder="0.0"
+                            oninput="saveAndCalc('${equipo}')"
                             onblur="validarRango(this); saveAndCalc('${equipo}')"></td>
                     <td><input type="checkbox" class="check-pista" onchange="saveAndCalc('${equipo}')"></td>
                     <td><input type="checkbox" class="check-bonus" onchange="saveAndCalc('${equipo}')"></td>
@@ -377,5 +380,7 @@
 
     init();
 </script>
+</body>
+</html>
 </body>
 </html>
