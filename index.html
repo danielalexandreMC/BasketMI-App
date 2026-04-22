@@ -197,16 +197,16 @@
     }
 
     function validarRango(el) {
-        // 1. Reemplazamos comas por puntos y eliminamos caracteres no válidos
         el.value = el.value.replace(/,/g, '.').replace(/[^0-9.]/g, '');
-    
-        // 2. Evitamos que haya más de un punto decimal
-        const puntos = el.value.split('.');
-        if (puntos.length > 2) el.value = puntos[0] + '.' + puntos.slice(1).join('');
-
-        // 3. Validamos el rango máximo de 4.5
-        if (parseFloat(el.value) > 4.5) {
-        el.value = "4.5";
+        const partes = el.value.split('.');
+        if (partes.length > 2) {
+            el.value = partes[0] + '.' + partes.slice(1).join('');
+    }
+    // Solo validar cando o usuario rematou de escribir a parte decimal
+        const val = parseFloat(el.value);
+        if (!isNaN(val) && el.value.indexOf('.') !== el.value.length - 1) {
+            if (val > 4.5) el.value = "4.5";
+            if (val < 0) el.value = "0";
         }
     }
 
@@ -228,7 +228,6 @@
                             class="editable" 
                             inputmode="decimal" 
                             placeholder="0.0" 
-                            onkeypress="return /[0-9\.]/.test(event.key)"
                             oninput="validarRango(this); saveAndCalc('${equipo}')"></td>
                     <td><input type="checkbox" class="check-pista" onchange="saveAndCalc('${equipo}')"></td>
                     <td><input type="checkbox" class="check-bonus" onchange="saveAndCalc('${equipo}')"></td>
