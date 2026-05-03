@@ -393,9 +393,11 @@
     // FUNCIÓN: Validar o campo CLASE
     // Comproba que o valor estea entre 0 e 4.5 e
     // corrixe o problema do separador decimal en iPhone (coma en vez de punto).
+    // IMPORTANTE: Agora sempre formatea o valor con punto decimal
+    // para garantir a compatibilidade con calquera dispositivo.
     // ============================================
     function validarRango(el) {
-        // IMPORTANTE: Substituímos a coma (,) polo punto (.) para que parseFloat o entenda.
+        // Substituímos a coma (,) polo punto (.) para que parseFloat o entenda.
         // Así evitamos que en iPhones con locale galego/español "1,4" se lea mal.
         var textoNormalizado = el.value.replace(',', '.');
         var val = parseFloat(textoNormalizado);
@@ -407,6 +409,11 @@
         // Se supera o máximo permitido (4.5), forzamos o valor a 4.5
         else if (val > 4.5) {
             el.value = '4.5';
+        }
+        // CORRECCIÓN FINAL: Se o valor é válido, formatámolo con punto decimal
+        // Isto resolve o problema de "1,5" que antes non se convertía correctamente.
+        else {
+            el.value = val.toFixed(1);
         }
     }
 
