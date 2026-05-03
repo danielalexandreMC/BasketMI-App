@@ -6,6 +6,7 @@
     <meta name="author" content="Paula Meizoso Alonso https://meizoso.eu">
     <meta name="date" content="2026-02-12">
 
+    <!-- Configuración para que funcione como WebApp en dispositivos móbiles (iOS e Android) -->
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -14,136 +15,293 @@
 
     <title>BSR Control Pro - Elite Edition</title>
     <style>
+        /* ============================================
+           VARIABLES CSS E MODO OSCURO/CLARO
+           ============================================ */
         :root { 
+            /* Tema claro por defecto */
             --primary: #000000;
             --secondary: #1b5e20;
             --accent: #2e7d32;
             --danger: #d32f2f;
             --text-light: #ffffff;
-            --bg: #f5f5f5;
-            --card-bg: #ffffff;
-            --text-main: #333333;
-            --row-active: #e8f5e9;
+            --bg: #f5f5f5;               /* Fondo xeral da páxina */
+            --card-bg: #ffffff;          /* Fondo das tarxetas (táboas) */
+            --text-main: #333333;        /* Cor do texto principal */
+            --row-active: #e8f5e9;       /* Fondo para as filas con xogadores en pista */
         }
 
         [data-theme="dark"] {
+            /* Tema escuro: invértense as cores de fondo e texto */
             --bg: #121212;
             --card-bg: #1e1e1e;
             --text-main: #e0e0e0;
             --row-active: #1b3320;
         }
         
+        /* ============================================
+           ESTILOS XERAIS DO BODY
+           ============================================ */
         body { 
             font-family: 'Segoe UI', Roboto, sans-serif; 
-            background: var(--bg); color: var(--text-main);
-            margin: 0; padding: 0; display: flex; flex-direction: column; 
-            align-items: center; padding-bottom: 240px; transition: background 0.3s;
+            background: var(--bg); 
+            color: var(--text-main);
+            margin: 0; 
+            padding: 0; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            padding-bottom: 240px; /* Espazo para que o footer fixo non tape o contido */
+            transition: background 0.3s; /* Suaviza o cambio entre modo claro e escuro */
         }
         
+        /* ============================================
+           CABECEIRA FIXA (sticky) COS BOTÓNS DE CONTROL
+           ============================================ */
         .header-fixed { 
-            width: 100%; max-width: 600px; background: var(--primary); 
-            padding: 10px; position: sticky; top: 0; z-index: 10; 
+            width: 100%; 
+            max-width: 600px; 
+            background: var(--primary); 
+            padding: 10px; 
+            position: sticky; 
+            top: 0; 
+            z-index: 10; 
             box-shadow: 0 2px 10px rgba(0,0,0,0.5);
         }
 
-        .top-bar { display: flex; gap: 5px; margin-bottom: 8px; }
+        /* Barra superior con botóns pequenos (Pantalla completa, Modo, Cargar quinteto) */
+        .top-bar { 
+            display: flex; 
+            gap: 5px; 
+            margin-bottom: 8px; 
+        }
         .btn-tool { 
-            flex: 1; background: #333; color: white; border: none; 
-            padding: 8px; font-size: 0.6em; border-radius: 4px; cursor: pointer;
-            text-transform: uppercase; font-weight: bold;
+            flex: 1; 
+            background: #333; 
+            color: white; 
+            border: none; 
+            padding: 8px; 
+            font-size: 0.6em; 
+            border-radius: 4px; 
+            cursor: pointer;
+            text-transform: uppercase; 
+            font-weight: bold;
         }
 
-        .selector-equipo { display: flex; gap: 8px; }
+        /* Selector de equipo: Local ou Visitante */
+        .selector-equipo { 
+            display: flex; 
+            gap: 8px; 
+        }
         .btn-tab { 
-            flex: 1; padding: 8px 5px; border: 2px solid transparent; 
-            border-radius: 4px; font-weight: bold; cursor: pointer; 
-            color: white; background: #222; transition: all 0.3s;
+            flex: 1; 
+            padding: 8px 5px; 
+            border: 2px solid transparent; 
+            border-radius: 4px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            color: white; 
+            background: #222; 
+            transition: all 0.3s;
         }
-        .btn-tab.active { background: var(--accent); border-color: white; }
+        .btn-tab.active { 
+            background: var(--accent); 
+            border-color: white; 
+        }
 
-        .card { background: var(--card-bg); width: 100%; max-width: 600px; display: none; }
-        .card.active { display: block; }
+        /* ============================================
+           TARXETAS (CARDS) DE CADA EQUIPO
+           ============================================ */
+        .card { 
+            background: var(--card-bg); 
+            width: 100%; 
+            max-width: 600px; 
+            display: none; /* Por defecto ocultas. Só se ve a activa */
+        }
+        .card.active { 
+            display: block; 
+        }
 
+        /* Nome do equipo (editable directamente na páxina) */
         .equipo-nombre { 
-            text-align: center; padding: 5px; font-weight: 900; 
-            text-transform: uppercase; border-bottom: 4px solid var(--accent); 
-            font-size: 1.2em; background: var(--card-bg); color: var(--text-main);
+            text-align: center; 
+            padding: 5px; 
+            font-weight: 900; 
+            text-transform: uppercase; 
+            border-bottom: 4px solid var(--accent); 
+            font-size: 1.2em; 
+            background: var(--card-bg); 
+            color: var(--text-main);
         }
         
-        table { width: 100%; border-collapse: collapse; }
-        th { background: var(--primary); color: white; padding: 10px 2px; font-size: 0.75em; }
-        td { text-align: center; padding: 6px 2px; border-bottom: 1px solid #44444433; }
+        /* ============================================
+           TÁBOA DE XOGADORES
+           ============================================ */
+        table { 
+            width: 100%; 
+            border-collapse: collapse; 
+        }
+        th { 
+            background: var(--primary); 
+            color: white; 
+            padding: 10px 2px; 
+            font-size: 0.75em; 
+        }
+        td { 
+            text-align: center; 
+            padding: 6px 2px; 
+            border-bottom: 1px solid #44444433; 
+        }
         
+        /* Inputs editables (dorsal e clase) */
         .editable { 
-            background: var(--card-bg); color: var(--text-main);
-            border: 1px solid #666; border-radius: 4px;
-            font-weight: bold; width: 45px; padding: 8px 2px; text-align: center; 
+            background: var(--card-bg); 
+            color: var(--text-main);
+            border: 1px solid #666; 
+            border-radius: 4px;
+            font-weight: bold; 
+            width: 45px; 
+            padding: 8px 2px; 
+            text-align: center; 
             font-size: 1em;
         }
 
-        /* Ocultar as flechas dos inputs numéricos en todos os navegadores */
+        /* Ocultar as frechas dos inputs numéricos en todos os navegadores */
         input[type="number"]::-webkit-inner-spin-button,
         input[type="number"]::-webkit-outer-spin-button {
             -webkit-appearance: none;
             margin: 0;
         }
         input[type="number"] {
-            -moz-appearance: textfield;
-            appearance: textfield;
+            -moz-appearance: textfield;       /* Firefox */
+            appearance: textfield;             /* Resto de navegadores */
         }
 
-        .puntos-netos { font-weight: bold; color: var(--accent); font-size: 1em; }
+        /* Puntos finais calculados para cada xogador */
+        .puntos-netos { 
+            font-weight: bold; 
+            color: var(--accent); 
+            font-size: 1em; 
+        }
 
-        .check-pista { transform: scale(1.7); accent-color: var(--accent); cursor: pointer; }
-        .check-bonus { transform: scale(1.7); accent-color: var(--secondary); }
+        /* Checkboxes: en pista (check-pista) e bonificacións muller/U23 (check-bonus) */
+        .check-pista { 
+            transform: scale(1.7);             /* Faise máis grande para facilitar o toque en móbil */
+            accent-color: var(--accent); 
+            cursor: pointer; 
+        }
+        .check-bonus { 
+            transform: scale(1.7); 
+            accent-color: var(--secondary); 
+        }
 
+        /* ============================================
+           FOOTER FIXO (RESUMO DE PUNTUACIÓN E BOTÓNS)
+           ============================================ */
         .footer-fixed {
-            position: fixed; bottom: 0; width: 100%; max-width: 600px;
-            background: var(--primary); border-top: 4px solid var(--accent);
-            padding: 15px; z-index: 100; box-sizing: border-box;
+            position: fixed; 
+            bottom: 0; 
+            width: 100%; 
+            max-width: 600px;
+            background: var(--primary); 
+            border-top: 4px solid var(--accent);
+            padding: 15px; 
+            z-index: 100; 
+            box-sizing: border-box;
         }
 
+        /* Panel de alertas (OK ou erro) */
         .panel-alertas { 
-            padding: 5px; border-radius: 4px; text-align: center; 
-            font-weight: bold; margin-bottom: 5px; font-size: 0.7em;
+            padding: 5px; 
+            border-radius: 4px; 
+            text-align: center; 
+            font-weight: bold; 
+            margin-bottom: 5px; 
+            font-size: 0.7em;
         }
-        .ok { background: var(--accent); color: white; }
-        .error { background: var(--danger); color: white; }
+        .ok { 
+            background: var(--accent); 
+            color: white; 
+        }
+        .error { 
+            background: var(--danger); 
+            color: white; 
+        }
 
+        /* Resumo numérico */
         .resumen { 
-            display: flex; justify-content: space-around; align-items: center;
-            background: rgba(255,255,255,0.1); padding: 8px; border-radius: 4px; 
-            margin-bottom: 8px; color: white;
+            display: flex; 
+            justify-content: space-around; 
+            align-items: center;
+            background: rgba(255,255,255,0.1); 
+            padding: 8px; 
+            border-radius: 4px; 
+            margin-bottom: 8px; 
+            color: white;
         }
-        .icon-bsr { font-size: 1.2em; margin-right: 8px; }
-        .puntos-val { font-size: 1.2em; color: #4ade80; font-weight: 900; }
+        .icon-bsr { 
+            font-size: 1.2em; 
+            margin-right: 8px; 
+        }
+        .puntos-val { 
+            font-size: 1.2em; 
+            color: #4ade80; 
+            font-weight: 900; 
+        }
 
-        .row-active { background-color: var(--row-active) !important; }
+        /* Fila activa (xogador en pista) resáltase cun fondo */
+        .row-active { 
+            background-color: var(--row-active) !important; 
+        }
 
-        .actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        /* Botóns de acción (Gardar quinteto, Borrar táboa) */
+        .actions-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+        }
         .btn-action { 
-            padding: 8px; border-radius: 4px; font-weight: bold; 
-            cursor: pointer; font-size: 0.8em; border: 1px solid #555;
-            background: transparent; color: #ccc;
+            padding: 8px; 
+            border-radius: 4px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 0.8em; 
+            border: 1px solid #555;
+            background: transparent; 
+            color: #ccc;
         }
-        .btn-save-q { border-color: #4ade80; color: #4ade80; }
+        .btn-save-q { 
+            border-color: #4ade80; 
+            color: #4ade80; 
+        }
     </style>
 </head>
 <body>
 
+    <!-- ============================================
+         CABECEIRA FIXA (sticky): inclúe os botóns de ferramentas e o selector de equipo
+         ============================================ -->
     <div class="header-fixed">
         <div class="top-bar">
+            <!-- Botón para activar/desactivar pantalla completa -->
             <button class="btn-tool" onclick="toggleFullScreen()">Fullscreem 🖥️</button>
+            <!-- Botón para cambiar entre modo claro e escuro -->
             <button class="btn-tool" onclick="toggleTheme()">Mode 🌓</button>
+            <!-- Botón para cargar o quinteto gardado -->
             <button class="btn-tool" onclick="cargarQuinteto()">Load 5 ⭐</button>
         </div>
         <div class="selector-equipo">
+            <!-- Pestanas para seleccionar o equipo local ou visitante -->
             <button id="tab-local" class="btn-tab active" onclick="switchEquipo('local')">BASKETMI</button>
             <button id="tab-visitante" class="btn-tab" onclick="switchEquipo('visitante')">CONTRARIO</button>
         </div>
     </div>
 
+    <!-- ============================================
+         TARXETA DO EQUIPO LOCAL
+         ============================================ -->
     <div id="card-local" class="card active">
+        <!-- Nome do equipo editable -->
         <div class="equipo-nombre" contenteditable="true" id="name-local" oninput="saveAndCalc('local')">BASKETMI</div>
         <table>
             <thead>
@@ -160,7 +318,11 @@
         </table>
     </div>
 
+    <!-- ============================================
+         TARXETA DO EQUIPO VISITANTE
+         ============================================ -->
     <div id="card-visitante" class="card">
+        <!-- Nome do equipo editable -->
         <div class="equipo-nombre" contenteditable="true" id="name-visitante" oninput="saveAndCalc('visitante')">CONTRARIO</div>
         <table>
             <thead>
@@ -177,12 +339,18 @@
         </table>
     </div>
 
+    <!-- ============================================
+         FOOTER FIXO: ALERTAS, RESUMO E BOTÓNS PRINCIPAIS
+         ============================================ -->
     <div class="footer-fixed">
+        <!-- Mensaxe de estado (OK, erro, etc.) -->
         <div id="alerta-panel" class="panel-alertas ok">ALINEACIÓN OK ✅</div>
+        <!-- Resumo de xogadores en pista e puntos totais -->
         <div class="resumen">
             <div><span class="icon-bsr">🧑‍🦽</span> <span id="val-jugadores" style="font-weight: bold; font-size: 1em;">0</span>/5</div>
             <div>PUNTOS: <span id="val-puntos" class="puntos-val">0.0</span> <small>/ 14.5</small></div>
         </div>
+        <!-- Botóns de acción -->
         <div class="actions-grid">
             <button class="btn-action btn-save-q" onclick="guardarQuinteto()">GUARDAR QUINTETO</button>
             <button class="btn-action" onclick="ejecutarReset()" style="border-color: var(--danger); color: var(--danger);">BORRAR TABLA</button>
@@ -190,36 +358,70 @@
     </div>
 
 <script>
-    let equipoActivo = 'local';
-    let theme = localStorage.getItem('bsr_theme') || 'light';
+    // ============================================
+    // VARIABLES GLOBAIS
+    // ============================================
+    let equipoActivo = 'local'; // Equipo que se está visualizando actualmente
+    let theme = localStorage.getItem('bsr_theme') || 'light'; // Tema gardado ou 'light' por defecto
 
+    // ============================================
+    // FUNCIÓN: Alternar entre modo claro e escuro
+    // ============================================
     function toggleTheme() {
+        // Cambia o tema actual
         theme = theme === 'light' ? 'dark' : 'light';
+        // Aplica o tema ao elemento raíz
         document.documentElement.setAttribute('data-theme', theme);
+        // Gárdao en localStorage para que se manteña ao recargar
         localStorage.setItem('bsr_theme', theme);
     }
 
+    // ============================================
+    // FUNCIÓN: Activar/desactivar pantalla completa
+    // ============================================
     function toggleFullScreen() {
         if (!document.fullscreenElement) {
+            // Se non estamos en pantalla completa, activámola
             document.documentElement.requestFullscreen().catch(e => console.log("Error FS"));
         } else {
+            // Se xa estamos, saímos
             document.exitFullscreen();
         }
     }
 
+    // ============================================
+    // FUNCIÓN: Validar o campo CLASE
+    // Comproba que o valor estea entre 0 e 4.5 e
+    // corrixe o problema do separador decimal en iPhone (coma en vez de punto).
+    // ============================================
     function validarRango(el) {
-        var val = parseFloat(el.value);
+        // IMPORTANTE: Substituímos a coma (,) polo punto (.) para que parseFloat o entenda.
+        // Así evitamos que en iPhones con locale galego/español "1,4" se lea mal.
+        var textoNormalizado = el.value.replace(',', '.');
+        var val = parseFloat(textoNormalizado);
+        
+        // Se non é un número ou é negativo, borramos o campo
         if (isNaN(val) || val < 0) {
             el.value = '';
-        } else if (val > 4.5) {
+        } 
+        // Se supera o máximo permitido (4.5), forzamos o valor a 4.5
+        else if (val > 4.5) {
             el.value = '4.5';
         }
     }
 
+    // ============================================
+    // FUNCIÓN: Inicializar a aplicación
+    // Crea as 12 filas da táboa para cada equipo e carga datos gardados.
+    // ============================================
     function init() {
+        // Aplicar o tema gardado
         document.documentElement.setAttribute('data-theme', theme);
+        
+        // Para cada equipo (local e visitante)
         ['local', 'visitante'].forEach(equipo => {
             const tbody = document.getElementById(`body-${equipo}`);
+            // Creamos 12 filas (unha por posible xogador)
             for (let i = 0; i < 12; i++) {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -246,22 +448,32 @@
                 tbody.appendChild(tr);
             }
         });
+        // Cargar datos que puidese haber en localStorage
         loadData();
     }
 
+    // ============================================
+    // FUNCIÓN: Gardar e calcular puntos dun equipo
+    // Le os valores de cada fila, calcula os puntos de cada xogador,
+    // actualiza a IU (resumo e alertas) e gárdao en localStorage.
+    // ============================================
     function saveAndCalc(equipo) {
         const filas = document.querySelectorAll(`#body-${equipo} tr`);
-        let enPista = 0;
-        let puntosTotales = 0;
+        let enPista = 0;        // Contador de xogadores en pista
+        let puntosTotales = 0;  // Suma total de puntos
 
+        // Recorremos todas as filas e construímos un array cos datos
         const data = Array.from(filas).map(f => {
             const inputs = f.querySelectorAll('input');
             const netoLabel = f.querySelector('.puntos-netos');
-            const claseBase = parseFloat(inputs[1].value) || 0;
+            
+            // CORRECCIÓN iPhone: normalizamos a coma decimal a punto
+            const claseBase = parseFloat((inputs[1].value || '').replace(',', '.')) || 0;
             const estaEnPista = inputs[2].checked;
             const esMujer = inputs[3].checked;
             const esU23 = inputs[4].checked;
 
+            // Calculamos os puntos do xogador aplicando descontos
             let puntosJugador = 0;
             if (claseBase > 0) {
                 let descuento = esMujer ? 1.5 : (esU23 ? 1.0 : 0);
@@ -269,6 +481,7 @@
             }
             netoLabel.innerText = puntosJugador.toFixed(1);
 
+            // Se está en pista, sumamos ao total
             if (estaEnPista) {
                 enPista++;
                 f.classList.add('row-active');
@@ -277,20 +490,36 @@
                 f.classList.remove('row-active');
             }
 
-            return { dorsal: inputs[0].value, clase: inputs[1].value, pista: estaEnPista, mujer: esMujer, u23: esU23 };
+            return { 
+                dorsal: inputs[0].value, 
+                clase: inputs[1].value, 
+                pista: estaEnPista, 
+                mujer: esMujer, 
+                u23: esU23 
+            };
         });
 
+        // Gardamos en localStorage
         localStorage.setItem(`bsr_data_${equipo}`, JSON.stringify(data));
         localStorage.setItem(`bsr_name_${equipo}`, document.getElementById(`name-${equipo}`).innerText);
+        
+        // Actualizamos a interface de usuario
         actualizarUI(equipo, puntosTotales, enPista);
     }
 
+    // ============================================
+    // FUNCIÓN: Actualizar a interface (footer)
+    // Mostra o número de xogadores en pista, puntos totais e estado.
+    // ============================================
     function actualizarUI(equipo, puntos, jugadores) {
+        // Só actualizamos se o equipo é o que está activo na pantalla
         if (equipo !== equipoActivo) return;
+        
         document.getElementById('val-jugadores').innerText = jugadores;
         document.getElementById('val-puntos').innerText = puntos.toFixed(1);
         const alerta = document.getElementById('alerta-panel');
         
+        // Lóxica de avisos
         if (jugadores > 5) {
             alerta.innerText = `⚠️ ERROR: ${jugadores} JUGADORES`;
             alerta.className = "panel-alertas error";
@@ -303,6 +532,10 @@
         }
     }
 
+    // ============================================
+    // FUNCIÓN: Gardar o quinteto actual
+    // Almacena en localStorage a configuración actual para recuperala despois.
+    // ============================================
     function guardarQuinteto() {
         const equipo = equipoActivo;
         const filas = document.querySelectorAll(`#body-${equipo} tr`);
@@ -320,9 +553,14 @@
         alert("⭐ Quinteto (Dorsales y Clases) guardado con éxito.");
     }
 
+    // ============================================
+    // FUNCIÓN: Cargar quinteto gardado
+    // Restaura a configuración previamente gardada no equipo activo.
+    // ============================================
     function cargarQuinteto() {
         const saved = localStorage.getItem(`bsr_snapshot_${equipoActivo}`);
         if (!saved) return alert("No hay ningún quinteto guardado.");
+        
         const data = JSON.parse(saved);
         const filas = document.querySelectorAll(`#body-${equipoActivo} tr`);
         data.forEach((d, i) => {
@@ -335,23 +573,39 @@
                 inputs[4].checked = d.u23;
             }
         });
+        // Recalculamos todo
         saveAndCalc(equipoActivo);
     }
 
+    // ============================================
+    // FUNCIÓN: Cambiar de equipo visible
+    // Alterna entre a vista do equipo local e a do visitante.
+    // ============================================
     function switchEquipo(equipo) {
         equipoActivo = equipo;
+        // Ocultamos todas as tarxetas e desactivamos todas as pestanas
         document.querySelectorAll('.card').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.btn-tab').forEach(b => b.classList.remove('active'));
+        // Activamos a tarxeta e pestana correspondentes
         document.getElementById(`card-${equipo}`).classList.add('active');
         document.getElementById(`tab-${equipo}`).classList.add('active');
+        // Recalculamos ao cambiar de equipo para mostrar os seus datos
         saveAndCalc(equipo);
     }
 
+    // ============================================
+    // FUNCIÓN: Cargar datos desde localStorage
+    // Recupera os datos gardados ao iniciar a aplicación.
+    // ============================================
     function loadData() {
         ['local', 'visitante'].forEach(equipo => {
             const savedData = localStorage.getItem(`bsr_data_${equipo}`);
             const savedName = localStorage.getItem(`bsr_name_${equipo}`);
+            
+            // Restauramos o nome do equipo
             if (savedName) document.getElementById(`name-${equipo}`).innerText = savedName;
+            
+            // Restauramos os datos da táboa
             if (savedData) {
                 const data = JSON.parse(savedData);
                 const filas = document.querySelectorAll(`#body-${equipo} tr`);
@@ -366,19 +620,28 @@
                     }
                 });
             }
+            // Recalculamos os puntos para que se actualice a vista
             saveAndCalc(equipo);
         });
     }
 
+    // ============================================
+    // FUNCIÓN: Borrar a táboa do equipo activo
+    // Limpa todos os campos e checkboxes e pide confirmación.
+    // ============================================
     function ejecutarReset() {
         if(confirm(`¿Deseas resetear toda la tabla de ${equipoActivo}?`)) {
+            // Seleccionamos todos os inputs dentro do equipo activo
             const inputs = document.querySelectorAll(`#body-${equipoActivo} input`);
             inputs.forEach(i => i.type === 'checkbox' ? i.checked = false : i.value = "");
+            // Recalculamos para actualizar a vista
             saveAndCalc(equipoActivo);
         }
     }
 
+    // ============================================
+    // INICIO DA APLICACIÓN
+    // ============================================
     init();
 </script>
 </body>
-</html>
