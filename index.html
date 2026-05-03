@@ -166,17 +166,6 @@
             font-size: 1em;
         }
 
-        /* Ocultar as frechas dos inputs numéricos en todos os navegadores */
-        input[type="number"]::-webkit-inner-spin-button,
-        input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        input[type="number"] {
-            -moz-appearance: textfield;       /* Firefox */
-            appearance: textfield;             /* Resto de navegadores */
-        }
-
         /* Puntos finais calculados para cada xogador */
         .puntos-netos { 
             font-weight: bold; 
@@ -392,13 +381,12 @@
     // ============================================
     // FUNCIÓN: Validar o campo CLASE
     // Comproba que o valor estea entre 0 e 4.5 e
-    // corrixe o problema do separador decimal en iPhone (coma en vez de punto).
-    // IMPORTANTE: Agora sempre formatea o valor con punto decimal
-    // para garantir a compatibilidade con calquera dispositivo.
+    // corrixe o problema do separador decimal en iPhone.
+    // Agora o campo é type="text" con inputmode="decimal",
+    // polo que podemos recibir e procesar correctamente a coma.
     // ============================================
     function validarRango(el) {
-        // Substituímos a coma (,) polo punto (.) para que parseFloat o entenda.
-        // Así evitamos que en iPhones con locale galego/español "1,4" se lea mal.
+        // Substituímos a coma (,) polo punto (.) para que parseFloat o entenda
         var textoNormalizado = el.value.replace(',', '.');
         var val = parseFloat(textoNormalizado);
         
@@ -410,8 +398,7 @@
         else if (val > 4.5) {
             el.value = '4.5';
         }
-        // CORRECCIÓN FINAL: Se o valor é válido, formatámolo con punto decimal
-        // Isto resolve o problema de "1,5" que antes non se convertía correctamente.
+        // Se o valor é válido, formatámolo con punto decimal
         else {
             el.value = val.toFixed(1);
         }
@@ -439,13 +426,10 @@
                             maxlength="2" 
                             onkeypress="return /[0-9]/.test(event.key)"
                             oninput="this.value = this.value.replace(/[^0-9]/g, ''); saveAndCalc('${equipo}')"></td>
-                    <td><input type="number" 
+                    <td><input type="text" 
                             class="editable" 
-                            step="any" 
-                            min="0" 
-                            max="4.5" 
+                            inputmode="decimal" 
                             placeholder="0.0"
-                            oninput="saveAndCalc('${equipo}')"
                             onblur="validarRango(this); saveAndCalc('${equipo}')"></td>
                     <td><input type="checkbox" class="check-pista" onchange="saveAndCalc('${equipo}')"></td>
                     <td><input type="checkbox" class="check-bonus" onchange="saveAndCalc('${equipo}')"></td>
@@ -474,7 +458,7 @@
             const inputs = f.querySelectorAll('input');
             const netoLabel = f.querySelector('.puntos-netos');
             
-            // CORRECCIÓN iPhone: normalizamos a coma decimal a punto
+            // Normalizamos a coma decimal a punto para que funcione en calquera dispositivo
             const claseBase = parseFloat((inputs[1].value || '').replace(',', '.')) || 0;
             const estaEnPista = inputs[2].checked;
             const esMujer = inputs[3].checked;
